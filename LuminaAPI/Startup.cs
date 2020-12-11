@@ -1,18 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 
 namespace LuminaAPI
 {
@@ -37,7 +28,7 @@ namespace LuminaAPI
                     opt.JsonSerializerOptions.IncludeFields = true;
                     opt.JsonSerializerOptions.Converters.Add( new SeStringConverter() );
                 } );
-            services.AddSingleton( new Lumina.Lumina( "G:/SteamLibrary/steamapps/common/FINAL FANTASY XIV Online/game/sqpack" ) );
+            services.AddSingleton( new Lumina.Lumina( Configuration.GetValue<string>( "DataPath" ) ) );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

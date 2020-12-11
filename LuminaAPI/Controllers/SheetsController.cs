@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Lumina.Data;
-using Lumina.Excel;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Action = Lumina.Excel.GeneratedSheets.Action;
 
 namespace LuminaAPI.Controllers
 {
@@ -21,6 +14,7 @@ namespace LuminaAPI.Controllers
         private readonly Lumina.Lumina _lumina;
         
         // todo: this is so shit
+        // also not thread safe either l m a o
         private static Dictionary< string, Type > _sheetNameToTypes = null!;
         private static MethodInfo _getSheetT = null!;
 
@@ -35,8 +29,8 @@ namespace LuminaAPI.Controllers
             
             _sheetNameToTypes = new();
 
-            var assembly = typeof( Action ).Assembly;
-            foreach( var type in assembly.GetTypes().Where( x => x.Namespace == typeof( Action ).Namespace ) )
+            var assembly = typeof( Lumina.Excel.GeneratedSheets.Action ).Assembly;
+            foreach( var type in assembly.GetTypes().Where( x => x.Namespace == typeof( Lumina.Excel.GeneratedSheets.Action ).Namespace ) )
             {
                 _sheetNameToTypes[ type.Name.ToLowerInvariant() ] = type;
             }
