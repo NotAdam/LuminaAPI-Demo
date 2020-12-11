@@ -5,6 +5,7 @@ Some quick things:
 * Requires the `ffxiv/0a*` files to be located in the datapath you provide
 * Some things break, due to cyclic references
 * The initial load of a sheet will be _slowish_ but subsequent loads will be very fast (< 1ms) as the data will be cached in memory from thereon
+* Lumina is single threaded, normally this isn't a problem but you will need to warm up the row cache for each sheet if you want to avoid this problem when the api is under high load
 
 
 # Usage
