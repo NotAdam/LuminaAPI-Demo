@@ -27,6 +27,7 @@ namespace LuminaAPI
                     opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
                     opt.JsonSerializerOptions.IncludeFields = true;
                     opt.JsonSerializerOptions.Converters.Add( new SeStringConverter() );
+                    opt.JsonSerializerOptions.PropertyNamingPolicy = null;
                 } );
             services.AddSingleton( new Lumina.Lumina( Configuration.GetValue<string>( "DataPath" ) ) );
         }
