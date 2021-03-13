@@ -11,16 +11,16 @@ namespace LuminaAPI.Controllers
     [Route( "[controller]/{language}" )]
     public class SheetsController : ControllerBase
     {
-        private readonly Lumina.Lumina _lumina;
+        private readonly Lumina.GameData _gameData;
         
         // todo: this is so shit
         // also not thread safe either l m a o
         private static Dictionary< string, Type > _sheetNameToTypes = null!;
         private static MethodInfo _getSheetT = null!;
 
-        public SheetsController( Lumina.Lumina lumina )
+        public SheetsController( Lumina.GameData gameData )
         {
-            _lumina = lumina;
+            _gameData = gameData;
 
             if( _sheetNameToTypes != null )
             {
@@ -35,7 +35,7 @@ namespace LuminaAPI.Controllers
                 _sheetNameToTypes[ type.Name.ToLowerInvariant() ] = type;
             }
 
-            _getSheetT = typeof( Lumina.Lumina )
+            _getSheetT = typeof( Lumina.GameData )
                 .GetMethods( BindingFlags.Instance | BindingFlags.Public )
                 .FirstOrDefault( x => x.Name == "GetExcelSheet" && x.GetParameters().Any() );
         }
@@ -52,7 +52,7 @@ namespace LuminaAPI.Controllers
 
             // todo: T R U L Y C U R S E D
             var getSheetTyped = _getSheetT.MakeGenericMethod( sheetType );
-            var sheet = getSheetTyped.Invoke( _lumina, new object[] { language } );
+            var sheet = getSheetTyped.Invoke( _gameData, new object[] { language } );
 
             var fn = sheet
                 .GetType()

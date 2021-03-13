@@ -3,10 +3,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Lumina.Text;
 
-namespace LuminaAPI
+namespace LuminaAPI.Converters
 {
     public class SeStringConverter : JsonConverter< SeString >
     {
+        public override bool CanConvert( Type type )
+        {
+            return typeof( SeString ) == type;
+        }
+        
         public override SeString Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
