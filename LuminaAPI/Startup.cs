@@ -1,5 +1,11 @@
-using System.Text.Json.Serialization;
-using LuminaAPI.Converters;
+using System;
+using System.Diagnostics;
+using HotChocolate.Types;
+using HotChocolate.Types.Pagination;
+using Lumina.Text;
+using LuminaAPI.Data;
+using LuminaAPI.GraphQL;
+using LuminaAPI.GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,17 +27,44 @@ namespace LuminaAPI
         public void ConfigureServices( IServiceCollection services )
         {
             services
-                .AddControllers()
-                .AddJsonOptions(
-                opt =>
+                .AddControllers();
+
+            var luminaInstance = new Lumina.GameData( Configuration.GetValue< string >( "DataPath" ) );
+
+            Service< Lumina.GameData >.Set( luminaInstance );
+            Service< SheetTypeCache >.Set( new SheetTypeCache( luminaInstance ) );
+
+            services.AddSingleton( luminaInstance );
+
+            services
+                .AddGraphQLServer()
+                .BindRuntimeType< UInt32, UnsignedIntType >()
+                .BindRuntimeType< UInt64, UnsignedLongType >()
+                .BindRuntimeType< UInt64, UnsignedLongType >()
+                .BindRuntimeType< SeString, StringType >()
+                .AddTypeConverter< SeString, string >( x =>
                 {
-                    opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-                    opt.JsonSerializerOptions.IncludeFields = true;
-                    opt.JsonSerializerOptions.Converters.Add( new SeStringConverter() );
-                    opt.JsonSerializerOptions.PropertyNamingPolicy = null;
-                    // opt.JsonSerializerOptions.Converters.Add( new LazyRowConverter() );
-                } );
-            services.AddSingleton( new Lumina.GameData( Configuration.GetValue<string>( "DataPath" ) ) );
+                    return x.RawString;
+                } )
+                // .AddTypeConverter< ILazyRow, object >( x =>
+                // {
+                //     return x.RawRow;
+                // } )
+                .SetPagingOptions( new PagingOptions
+                {
+                    DefaultPageSize = 100,
+                    MaxPageSize = 250,
+                    IncludeTotalCount = true
+                } )
+#if DEBUG
+                .OnSchemaError( ( err, ex ) => { Debugger.Break(); } )
+#endif
+                // .AddDirectiveType< LanguageDirectiveType >()
+                .BindRuntimeType< UInt16, UnsignedShortType >()
+                // todo: fix this shit because it's not actually valid
+                .BindRuntimeType< sbyte, IntType >()
+                .AddType< SheetsQueryType >()
+                .AddQueryType< QueryType >();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,7 +81,11 @@ namespace LuminaAPI
 
             app.UseAuthorization();
 
-            app.UseEndpoints( endpoints => { endpoints.MapControllers(); } );
+            app.UseEndpoints( endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapGraphQL();
+            } );
         }
     }
 }
